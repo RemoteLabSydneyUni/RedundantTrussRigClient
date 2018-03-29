@@ -1,0 +1,402 @@
+/**
+ * SAHARA Rig Client
+ * 
+ * Software abstraction of physical rig to provide rig session control
+ * and rig device control. Automatically tests rig hardware and reports
+ * the rig status to ensure rig goodness.
+ *
+ * @license See LICENSE in the top level directory for complete license terms.
+ *
+ * Copyright (c) 2010, University of Technology, Sydney
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice, 
+ *    this list of conditions and the following disclaimer.
+ *  * Redistributions in binary form must reproduce the above copyright 
+ *    notice, this list of conditions and the following disclaimer in the 
+ *     documentation and/or other materials provided with the distribution.
+ *  * Neither the name of the University of Technology, Sydney nor the names 
+ *    of its contributors may be used to endorse or promote products derived from 
+ *    this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * @author Michael Diponio (mdiponio)
+ * @date 20th September 2010
+ */
+package au.edu.uts.eng.remotelabs.rigclient.server.pages;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import au.edu.uts.eng.remotelabs.rigclient.util.ConfigFactory;
+import au.edu.uts.eng.remotelabs.rigclient.util.IConfigDescriptions;
+import au.edu.uts.eng.remotelabs.rigclient.util.IConfigDescriptions.Property;
+
+/**
+ * Configuration page.
+ */
+public class ConfigPage extends AbstractPage
+{
+    /** Stanza where properties go if they don't exist in other stanzas. */
+    public static final String OTHER_STANZA = "Other";
+    
+    /** Sorted configuration stanzas. */
+    private  Map<String, Map<String, String>> stanzas;
+    
+    /** Configuration properties. */
+    private Map<String, String> props;
+    
+    /** Configuration descriptions. */
+    private IConfigDescriptions desc;
+    
+    /** Stanza to load. */
+    private String uriSuffix;
+    
+    @Override
+    public void preService(HttpServletRequest req)
+    {
+        this.props = this.config.getAllProperties();
+        this.desc = ConfigFactory.getDescriptions();
+        
+        /* Group the properties by stanza. */
+        this.stanzas = new HashMap<String, Map<String, String>>();
+        for (Entry<String, String> e : this.props.entrySet())
+        {
+            Property p = this.desc.getPropertyDescription(e.getKey());
+            String sta = ConfigPage.OTHER_STANZA;
+            if (p != null)
+            {
+                /* The property description exists so add the property to the 
+                 * configured stanza. */
+                sta = p.getStanza();
+            }
+            if (!this.stanzas.containsKey(sta)) this.stanzas.put(sta, new HashMap<String, String>());
+            this.stanzas.get(sta).put(e.getKey(), e.getValue());
+        }
+        
+        String url = "";
+        try
+        {
+            url = URLDecoder.decode(req.getRequestURI(), 
+                    req.getCharacterEncoding() == null ? "UTF-8" : req.getCharacterEncoding());
+        }
+        catch (UnsupportedEncodingException ex)
+        {
+           this.logger.error("Unknown character encoding from HTTP request. Reqest character encoding  is '" + 
+                   req.getCharacterEncoding() + "'. Going to attempt to use the UTF-8 encoding.");
+           try
+           {
+               url = URLDecoder.decode(req.getRequestURI(), "UTF-8");
+           }
+           catch (UnsupportedEncodingException e1)
+           {
+               this.logger.error("Failed URL decoding with 'UTF-8' character encoding, failing request.");
+           } 
+        }
+        
+        if (!"/config".equals(url))
+        {
+            this.uriSuffix = url.substring(url.lastIndexOf("/config") + 8);
+            if (this.stanzas.containsKey(this.uriSuffix))
+            {
+                this.framing = false;
+            }
+        }
+        else this.uriSuffix = url;
+    }
+ 
+    @Override
+    public void contents(HttpServletRequest req, HttpServletResponse resp) throws IOException
+    {
+        String displayStanza = "Rig";
+        
+        if (this.stanzas.containsKey(this.uriSuffix))
+        {
+            List<String> restartProps = new ArrayList<String>();
+            
+            if ("POST".equalsIgnoreCase(req.getMethod()))
+            {
+                /* Stored the posted values. */
+                displayStanza = this.uriSuffix;
+                
+                Map<Integer, String[]> newProps = new HashMap<Integer, String[]>();
+                boolean changed = false;
+                
+                @SuppressWarnings("unchecked")
+                Enumeration<String> params = req.getParameterNames();
+                while (params.hasMoreElements())
+                {
+                    
+                    String param = params.nextElement().trim();
+                    String value = req.getParameter(param).trim();
+                    
+                    if ("".equals(param)) continue;
+                    
+                    if (param.startsWith("NEW_PROP_KEY_"))
+                    {
+                        Integer keyNum = Integer.decode(param.substring("NEW_PROP_KEY_".length()));
+                        if (!newProps.containsKey(keyNum))
+                        {
+                            newProps.put(keyNum, new String[2]);
+                        }
+                        newProps.get(keyNum)[0] = value;
+                    }
+                    else if (param.startsWith("NEW_PROP_VAL_"))
+                    {
+                        Integer keyNum = Integer.decode(param.substring("NEW_PROP_VAL_".length()));
+                        if (!newProps.containsKey(keyNum))
+                        {
+                            newProps.put(keyNum, new String[2]);
+                        }
+                        newProps.get(keyNum)[1] = value;
+                    }
+                    else 
+                    {
+                        String confVal = this.config.getProperty(param);
+                        if (confVal == null || !confVal.equals(value))
+                        {
+                            this.logger.info("Changing configuration property '" + param + "' to '" + value + "'.");
+                            
+                            /* Property is changed so save it. */
+                            this.props.put(param, value);
+                            this.config.setProperty(param, value);
+                            changed = true;
+                            
+                            Property p = this.desc.getPropertyDescription(param);
+                            if (p == null || p.needsRestart()) restartProps.add(param);
+                        }
+                    }
+                }
+                
+                /* Add the new properties. */
+                for (String p[] : newProps.values())
+                {
+                    if (p[0] == null || p[1] == null) continue;
+                    
+                    this.logger.info("Adding new property '" + p[0] + "' with value '" + p[1] + "'.");
+                    changed = true;
+                    this.props.put(p[0], p[1]);
+                    this.config.setProperty(p[0], p[1]);
+                }
+                
+                if (changed) this.config.serialise();
+            }
+    
+            this.getConfigStanza(this.uriSuffix, restartProps);
+            return;
+        }
+
+        /* Add tabs to page. */
+        this.println("<div id='lefttabbar'>");
+        this.println("  <ul id='lefttablist'>");
+
+        int i = 0;
+        Set<String> orderedStanzas = new LinkedHashSet<String>(this.desc.getStanzas());
+        orderedStanzas.retainAll(this.stanzas.keySet());
+        orderedStanzas.addAll(this.stanzas.keySet());
+
+        for (String s : orderedStanzas)
+        {
+            String id = s.replace(" ", "");
+
+            String classes = "Rig".equals(s) ? "selectedtab" : "notselectedtab";
+            if (i == 0) classes += " ui-corner-tl";
+            else if (i == this.stanzas.size() - 1) classes += " ui-corner-bl";
+
+            this.println("<li><a id='" + id + "tab' class='" + classes + "' onclick='loadConfStanza(\"" + s + "\")'>");
+            this.println("  <div class='conftab'>");
+            this.println("    " + s);
+            this.println("  </div>");
+            this.println("</a></li>");
+
+            i++;
+        }
+
+        this.println("  </ul>");
+        this.println("</div>");
+
+        /* Save and new property buttons. */
+        this.println("<div id='confbuttonbar'>" +
+                      "  <div id='newbutton'>Add Property</div>" +
+                      "  <div id='savebutton'>Save Changes</div>" +
+                      "</div>");
+        
+        this.println("<div id='contentspane' class='ui-corner-tr ui-corner-bottom'>");
+        this.getConfigStanza(displayStanza, Collections.<String>emptyList());
+        this.println("</div>");
+        
+        this.println("<div style='clear: both;'> </div>");
+
+        this.println("<script type='text/javascript'>");
+        this.println(
+                "$(document).ready(function() {\n" +
+                "     $('#confform').validationEngine();\n");
+
+        /* Contents pane height. */
+        this.println("     resizeConfPanel();");
+        this.println(
+                "     $(window).resize(function() { \n" +
+                "         resizeConfPanel();\n" +
+                "     });");
+
+        this.println(
+                "   $('#newbutton').button().click(addConfProp);");
+        
+        this.println(
+                "  $('#savebutton').button().click(saveConf);");
+        
+        this.println(
+                "   $('#confform input')" +
+                "       .focusin(formFocusIn)" +
+                "       .focusout(formFocusOut);");
+        
+        this.println("});");		
+        this.println("</script>");
+    }
+    
+    /**
+     * Gets the configuration for the supplied stanza.
+     * 
+     * @param stanza stanza name
+     * @param restartProps properties whose details should be annotated with restart required
+     */
+    private void getConfigStanza(String stanza, List<String> restartProps)
+    {
+        Map<String, String> stanzaProps = this.stanzas.get(stanza);
+        List<Property> stanzaPropList = this.desc.getPropertyDescriptions(stanza);
+        
+        this.println("<form id='confform' action='/config/" + stanza + "' method='POST' class='saharaform'>");
+        this.println("  <table id='contentstable'>");
+        int i = 0;
+        
+        if (stanzaPropList != null)
+        {
+            for (Property p : stanzaPropList)
+            {
+                String name = p.getName();
+                stanzaProps.remove(name);
+                String val = this.config.getProperty(name);
+                if (val == null) val = ""; // If the property value isn't set.
+                
+                this.println("<tr class='" + (i % 2 == 0 ? "evenrow" : "oddrow") + "'>");
+                
+                /* Property details. */
+                this.println("  <td class='pcol'>");
+                this.println("      <span class='pkey'>" + name + "</span>");
+                this.println("      <div class='pdesc'>" + p.getDescription() + "</div>");
+                this.println("  </td>");
+                this.println("  <td class='pval'>");
+                
+                String vd = "validate[";
+                vd += p.isMandatory() ? "required" : "optional";
+                switch (p.getType())
+                {
+                    case BOOLEAN:
+                        if ("true".equalsIgnoreCase(val))
+                        {
+                            this.println("<div><input type='radio' name='" + name + "' value='true' checked='checked' />" +
+                                    "<span class='pblabel'>true</span></div>");
+                        }
+                        else
+                        {
+                            this.println("<div><input type='radio' name='" + name + "' value='true' />" +
+                                    "<span class='pblabel'>true</span></div>");
+                        }
+                        
+                        if ("false".equalsIgnoreCase(val))
+                        {
+                            this.println("<div style='margin-top: 10px'><input type='radio' name='" + name + "' value='false' checked='checked' />" +
+                                    "<span class='pblabel'>false</span></div>");
+                        }
+                        else
+                        {
+                            this.println("<div style='margin-top: 10px'><input type='radio' name='" + name + "' value='false' />" +
+                                    "<span class='pblabel'>false</span></div>");
+                        }
+                        break;
+                    case CHAR:
+                        if (vd.charAt(vd.length() - 1) != '[') vd += ',';
+                        vd += "length[1,1]]";
+                        this.println("<input id='" + name + "' type='text' name='" + name + "' class='" + vd + "' value='" + 
+                                val + "' />");
+                        break;
+                    case FLOAT:
+                        if (vd.charAt(vd.length() - 1) != '[') vd += ',';
+                        vd += "custom[onlyNumber]]";
+                        this.println("<input id='" + name + "' type='text' name='" + name + "' class='" + vd + "' value='" + 
+                                val + "' />");
+                        break;
+                    case INTEGER:
+                        if (vd.charAt(vd.length() - 1) != '[') vd += ',';
+                        vd += "custom[onlyNumber]]";
+                        this.println("<input id='" + name + "' type='text' name='" + name + "' class='" + vd + "' value='" + 
+                                val + "' />");
+                        break;
+                    case STRING:
+                        this.println("<input id='" + name + "' type='text' name='" + name + "' class='" + vd + "]' value='" + 
+                                val + "' />");
+                        break;
+                }
+                
+                if (restartProps.contains(name))
+                {
+                    this.println("<div class='restartrequired'>" +
+                    		"A restart is required for this value to be applied.</div>");
+                }
+
+                this.println("  </td>");
+                this.println("</tr>");
+                i++;
+            }
+            
+            /* Any other properties that may exist. */
+            for (Entry<String, String> e : stanzaProps.entrySet())
+            {
+                this.println("<tr class='" + (i % 2 == 0 ? "evenrow" : "oddrow") + "'>");
+                this.println("  <td class='pcol'>");
+                this.println("      <span class='pkey'>" + e.getKey() + "</span>");
+                this.println("  </td>");
+                this.println("  <td class='pval'>");
+                this.println("      <input id='" + e.getKey() + "' type='text' name='" + e.getKey() + "' value='" + 
+                            e.getValue() + "' />");
+                this.println("  </td>");
+                this.println("</tr>");
+                i++;
+            }
+        }
+        this.println("  </table>");       
+        this.println("</form>");
+    }
+
+    @Override
+    protected String getPageType()
+    {
+        return "Configuration";
+    }
+}

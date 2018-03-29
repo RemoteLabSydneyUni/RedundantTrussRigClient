@@ -1,0 +1,850 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                         ## Sahara Rig Client ##
+
+Copyright (c) 2009, University of Technology, Sydney
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice, 
+      this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright 
+      notice, this list of conditions and the following disclaimer in the 
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the University of Technology, Sydney nor the names 
+      of its contributors may be used to endorse or promote products derived from 
+      this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Author: Michael Diponio (mdiponio)
+Date: 12th October 2009
+
+Changelog:
+  - 12/10/2009 - mdiponio - Initial file creation
+  - 08/12/2009 - mdiponio - Addition of AuthRequiredRequestType and base class changes to multiple 
+                            elements. 
+-->
+<wsdl:definitions xmlns:rigclient="http://remotelabs.eng.uts.edu.au/rigclient/protocol" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="RigClientService" targetNamespace="http://remotelabs.eng.uts.edu.au/rigclient/protocol">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://remotelabs.eng.uts.edu.au/rigclient/protocol">
+      <xsd:element name="allocate" type="rigclient:UserType">
+      </xsd:element>
+      <xsd:element name="allocateResponse"
+      	type="rigclient:OperationResponseType">
+      </xsd:element>
+      <xsd:element name="release" type="rigclient:UserType"></xsd:element>
+      <xsd:element name="releaseResponse"
+      	type="rigclient:OperationResponseType">
+      </xsd:element>
+      <xsd:element name="notify" type="rigclient:NotificationRequestType">
+      </xsd:element>
+      <xsd:element name="notifyResponse"
+      	type="rigclient:OperationResponseType">
+      </xsd:element>
+      <xsd:element name="performBatchControl"
+      	type="rigclient:BatchRequestType">
+      </xsd:element>
+      <xsd:element name="performBatchControlResponse"
+      	type="rigclient:OperationResponseType">
+      </xsd:element>
+      <xsd:element name="performPrimitiveControl"
+      	type="rigclient:PrimitiveControlRequestType">
+      </xsd:element>
+      <xsd:element name="performPrimitiveControlResponse"
+      	type="rigclient:PrimitiveControlResponseType">
+      </xsd:element>
+      <xsd:element name="getAttribute" type="rigclient:AttributeRequestType">
+      </xsd:element>
+      <xsd:element name="getAttributeResponse"
+      	type="rigclient:AttributeResponseType">
+      </xsd:element>
+      <xsd:element name="getStatus" type="rigclient:NullType"></xsd:element>
+      <xsd:element name="getStatusResponse"
+      	type="rigclient:StatusResponseType">
+      </xsd:element>
+      <xsd:element name="setMaintenance"
+      	type="rigclient:MaintenanceRequestType">
+      </xsd:element>
+      <xsd:element name="setMaintenanceResponse"
+      	type="rigclient:OperationResponseType">
+      </xsd:element>
+      <xsd:element name="setTestInterval"
+      	type="rigclient:TestIntervalRequestType">
+      </xsd:element>
+      <xsd:element name="setTestIntervalResponse"
+      	type="rigclient:OperationResponseType">
+      </xsd:element>
+      <xsd:complexType name="UserType">
+      	<xsd:annotation>
+      		<xsd:documentation>
+      			Specifies the name of the user to either allocate /
+      			release.
+      		</xsd:documentation>
+      	</xsd:annotation>
+      	<xsd:complexContent>
+      		<xsd:extension base="rigclient:AuthRequiredRequestType">
+      			<xsd:sequence>
+      				<xsd:element name="user"
+      					type="xsd:string">
+      				</xsd:element>
+      			</xsd:sequence>
+      		</xsd:extension>
+      	</xsd:complexContent>
+      </xsd:complexType>
+      <xsd:element name="in" type="rigclient:UserType"></xsd:element>
+            <xsd:complexType name="OperationResponseType">
+                <xsd:annotation>
+                	<xsd:documentation>Response from performing a request.</xsd:documentation>
+                </xsd:annotation>
+                <xsd:sequence>
+                	<xsd:element name="success" type="xsd:boolean">
+                		<xsd:annotation>
+                			<xsd:documentation>
+                				True if the operation is successful.
+                			</xsd:documentation>
+                		</xsd:annotation>
+                	</xsd:element>
+                    <xsd:element name="willCallback" type="xsd:boolean" maxOccurs="1" minOccurs="0"></xsd:element>
+                    <xsd:element maxOccurs="1" minOccurs="0"
+                		ref="rigclient:error">
+                		<xsd:annotation>
+                			<xsd:documentation>
+                				If the operation success was false
+                			</xsd:documentation>
+                		</xsd:annotation>
+                	</xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="ErrorType">
+                <xsd:annotation>
+                	<xsd:documentation>Error information.</xsd:documentation>
+                </xsd:annotation>
+                <xsd:sequence>
+            		<xsd:element name="code" type="xsd:int">
+            			<xsd:annotation>
+            				<xsd:documentation></xsd:documentation>
+            			</xsd:annotation></xsd:element>
+            		<xsd:element name="operation" type="xsd:string">
+            			<xsd:annotation>
+            				<xsd:documentation>Operation that was attempted</xsd:documentation>
+            			</xsd:annotation></xsd:element>
+            		<xsd:element name="reason" type="xsd:string">
+            			<xsd:annotation>
+            				<xsd:documentation>Reason for error.</xsd:documentation>
+            			</xsd:annotation></xsd:element>
+            		<xsd:element name="trace" type="xsd:string" maxOccurs="1" minOccurs="0">
+            			<xsd:annotation>
+            				<xsd:documentation>Extra information to help debugging.</xsd:documentation>
+            			</xsd:annotation></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+            <xsd:element name="error" type="rigclient:ErrorType">
+            	<xsd:annotation></xsd:annotation>
+            </xsd:element>
+        
+            <xsd:complexType name="NotificationRequestType">
+            	<xsd:complexContent>
+            		<xsd:extension
+            			base="rigclient:AuthRequiredRequestType">
+            			<xsd:sequence>
+            				<xsd:element name="message"
+            					type="xsd:string">
+            				</xsd:element>
+            			</xsd:sequence>
+            		</xsd:extension>
+            	</xsd:complexContent>
+            </xsd:complexType>
+
+            <xsd:complexType name="BatchRequestType">
+            	<xsd:complexContent>
+            		<xsd:extension
+            			base="rigclient:AuthRequiredRequestType">
+            			<xsd:sequence>
+            				<xsd:element name="batchFile"
+            					type="xsd:base64Binary">
+            				</xsd:element>
+            				<xsd:element name="fileName"
+            					type="xsd:string">
+            				</xsd:element>
+            			</xsd:sequence>
+            		</xsd:extension>
+            	</xsd:complexContent>
+            </xsd:complexType>
+            <xsd:element name="abortBatchControl"
+            	type="rigclient:AuthRequiredRequestType">
+            </xsd:element>
+            <xsd:element name="abortBatchControlResponse"
+            	type="rigclient:OperationResponseType">
+            </xsd:element>
+    
+            <xsd:complexType name="PrimitiveControlRequestType">
+            	<xsd:annotation>
+            		<xsd:documentation>
+            			Parameter name.
+            		</xsd:documentation>
+            	</xsd:annotation>
+            	<xsd:complexContent>
+            		<xsd:extension
+            			base="rigclient:AuthRequiredRequestType">
+            			<xsd:sequence>
+            				<xsd:element name="controller"
+            					type="xsd:string">
+            				</xsd:element>
+            				<xsd:element name="action"
+            					type="xsd:string">
+            				</xsd:element>
+            				<xsd:element name="param"
+            					type="rigclient:ParamType" maxOccurs="unbounded" minOccurs="0">
+            				</xsd:element>
+            			</xsd:sequence>
+            		</xsd:extension>
+            	</xsd:complexContent>
+            </xsd:complexType>
+
+            <xsd:complexType name="ParamType">
+            	<xsd:sequence>
+            		<xsd:element name="name" type="xsd:string"></xsd:element>
+            		<xsd:element name="value" type="xsd:string">
+            			<xsd:annotation>
+            				<xsd:documentation>Parameter value.</xsd:documentation>
+            			</xsd:annotation></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+            <xsd:element name="getBatchControlStatus"
+            	type="rigclient:AuthRequiredRequestType">
+            </xsd:element>
+            <xsd:element name="getBatchControlStatusResponse"
+            	type="rigclient:BatchStatusResponseType">
+            </xsd:element>
+            <xsd:element name="slaveAllocate" type="rigclient:SlaveUserType">
+            </xsd:element>
+            <xsd:element name="slaveAllocateResponse"
+            	type="rigclient:OperationResponseType">
+            </xsd:element>
+            <xsd:element name="slaveRelease" type="rigclient:UserType">
+            </xsd:element>
+            <xsd:element name="slaveReleaseResponse"
+            	type="rigclient:OperationResponseType">
+            </xsd:element>
+    
+            <xsd:complexType name="PrimitiveControlResponseType">
+            	<xsd:complexContent>
+            		<xsd:extension base="rigclient:OperationResponseType">
+            			<xsd:sequence>
+                            <xsd:element name="wasSuccessful" type="xsd:string">
+            				</xsd:element>
+                            <xsd:element name="result"
+            					type="rigclient:ParamType" maxOccurs="unbounded"
+            					minOccurs="0">
+            				</xsd:element>
+            			</xsd:sequence>
+            		</xsd:extension>
+            	</xsd:complexContent>
+            </xsd:complexType>
+    
+            <xsd:complexType name="SlaveUserType">
+            	<xsd:complexContent>
+            		<xsd:extension base="rigclient:UserType">
+            			<xsd:sequence>
+            				<xsd:element name="type">
+            					<xsd:simpleType>
+            						<xsd:restriction
+            							base="xsd:string">
+            							<xsd:enumeration
+            								value="Active">
+            							</xsd:enumeration>
+            							<xsd:enumeration
+            								value="Passive">
+            							</xsd:enumeration>
+            						</xsd:restriction>
+            					</xsd:simpleType>
+            				</xsd:element>
+            			</xsd:sequence>
+            		</xsd:extension>
+            	</xsd:complexContent>
+            </xsd:complexType>
+    
+            <xsd:complexType name="BatchStatusResponseType">
+            	<xsd:sequence>
+            		<xsd:element name="state">
+            			<xsd:simpleType>
+            				<xsd:restriction base="xsd:string">
+            					<xsd:enumeration value="CLEAR"></xsd:enumeration>
+            					<xsd:enumeration value="IN_PROGRESS"></xsd:enumeration>
+            					<xsd:enumeration value="COMPLETE"></xsd:enumeration>
+            					<xsd:enumeration value="FAILED"></xsd:enumeration>
+            					<xsd:enumeration
+            						value="NOT_SUPPORTED">
+            					</xsd:enumeration>
+            				</xsd:restriction>
+            			</xsd:simpleType>
+            		</xsd:element>
+            		<xsd:element name="progress" type="xsd:string"></xsd:element>
+            		<xsd:element name="resultFilePath" type="xsd:string"
+            			minOccurs="0" maxOccurs="unbounded">
+            		</xsd:element>
+            		<xsd:element name="exitCode" type="xsd:int" maxOccurs="1" minOccurs="0"></xsd:element>
+            		<xsd:element name="stdout" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+            		<xsd:element name="stderr" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="AttributeRequestType">
+            	<xsd:complexContent>
+            		<xsd:extension
+            			base="rigclient:AuthRequiredRequestType">
+            			<xsd:sequence>
+            				<xsd:element name="attribute"
+            					type="xsd:string">
+            				</xsd:element>
+            			</xsd:sequence>
+            		</xsd:extension>
+            	</xsd:complexContent>
+            </xsd:complexType>
+
+            <xsd:complexType name="AttributeResponseType">
+            	<xsd:sequence>
+            		<xsd:element name="attribute" type="xsd:string"></xsd:element>
+            		<xsd:choice>
+            			<xsd:element name="value" type="xsd:string">
+            			</xsd:element>
+            			<xsd:element name="error"
+            				type="rigclient:ErrorType">
+            			</xsd:element>
+            		</xsd:choice>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="NullType">
+            	<xsd:sequence>
+            		<xsd:element name="void" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="StatusResponseType">
+            	<xsd:sequence>
+            		<xsd:element name="isMonitorFailed"
+            			type="xsd:boolean">
+            		</xsd:element>
+            		<xsd:element name="monitorReason"
+            			type="xsd:string" maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="isInMaintenance"
+            			type="xsd:boolean">
+            		</xsd:element>
+            		<xsd:element name="maintenanceReason"
+            			type="xsd:string" maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="isInSession" type="xsd:boolean"></xsd:element>
+            		<xsd:element name="sessionUser" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+            		<xsd:element name="slaveUsers" type="xsd:string" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="MaintenanceRequestType">
+            	<xsd:complexContent>
+            		<xsd:extension
+            			base="rigclient:AuthRequiredRequestType">
+            			<xsd:sequence>
+            				<xsd:element name="putOffline"
+            					type="xsd:boolean">
+            				</xsd:element>
+            				<xsd:element name="runTests"
+            					type="xsd:boolean">
+            				</xsd:element>
+            			</xsd:sequence>
+            		</xsd:extension>
+            	</xsd:complexContent>
+            </xsd:complexType>
+
+            <xsd:complexType name="TestIntervalRequestType">
+            	<xsd:complexContent>
+            		<xsd:extension
+            			base="rigclient:AuthRequiredRequestType">
+            			<xsd:sequence>
+            				<xsd:element name="interval"
+            					type="xsd:int">
+            				</xsd:element>
+            			</xsd:sequence>
+            		</xsd:extension>
+            	</xsd:complexContent>
+            </xsd:complexType>
+
+            <xsd:complexType name="AuthRequiredRequestType">
+            	<xsd:sequence>
+            		<xsd:element name="identityToken" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="requestor" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="async" type="xsd:boolean" maxOccurs="1"
+            			minOccurs="0">
+                        <xsd:annotation>
+                        	<xsd:documentation>The sync parameters is a hint to the rig client to perform the requested operation asynchonously. </xsd:documentation>
+                        </xsd:annotation>
+            		</xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+            <xsd:element name="isActivityDetectable"
+            	type="rigclient:NullType">
+            </xsd:element>
+            <xsd:element name="isActivityDetectableResponse"
+            	type="rigclient:ActivityDetectableType">
+            </xsd:element>
+            
+            <xsd:complexType name="ActivityDetectableType">
+            	<xsd:sequence>
+            		<xsd:element name="activity" type="xsd:boolean"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+            <xsd:element name="getConfig"
+            	type="rigclient:NullType">
+            </xsd:element>
+            <xsd:element name="getConfigResponse"
+            	type="rigclient:ConfigResponseType">
+            </xsd:element>
+            <xsd:element name="setConfig"
+            	type="rigclient:SetConfigRequestType">
+            </xsd:element>
+            <xsd:element name="setConfigResponse"
+            	type="rigclient:OperationResponseType">
+            </xsd:element>
+            
+            <xsd:complexType name="ConfigResponseType">
+            	<xsd:sequence>
+            		<xsd:element name="config"
+            			type="rigclient:ConfigPropertyType" minOccurs="0" maxOccurs="unbounded">
+            		</xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="SetConfigRequestType">
+            	<xsd:complexContent>
+            		<xsd:extension
+            			base="rigclient:AuthRequiredRequestType">
+            			<xsd:sequence>
+            				<xsd:element name="config"
+            					type="rigclient:ConfigPropertyType">
+            				</xsd:element>
+            			</xsd:sequence>
+            		</xsd:extension>
+            	</xsd:complexContent>
+            </xsd:complexType>
+    
+            <xsd:complexType name="ConfigPropertyType">
+            	<xsd:sequence>
+            		<xsd:element name="key" type="xsd:string"></xsd:element>
+            		<xsd:element name="value" type="xsd:string"></xsd:element>
+                    <xsd:element name="stanza" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+                    <xsd:element name="description" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="type" maxOccurs="1"
+            			minOccurs="0">
+            			<xsd:simpleType>
+            				<xsd:restriction base="xsd:string">
+            					<xsd:enumeration value="STRING"></xsd:enumeration>
+            					<xsd:enumeration value="INTEGER"></xsd:enumeration>
+            					<xsd:enumeration value="FLOAT"></xsd:enumeration>
+            					<xsd:enumeration value="BOOLEAN"></xsd:enumeration>
+            					<xsd:enumeration value="CHAR"></xsd:enumeration>
+            				</xsd:restriction>
+            			</xsd:simpleType>
+            		</xsd:element>
+            		<xsd:element name="format" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="default" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="restart" type="xsd:boolean"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="example" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="allocateRequest">
+  	<wsdl:part name="parameters" element="rigclient:allocate"/>
+  </wsdl:message>
+  <wsdl:message name="allocateResponse">
+    <wsdl:part element="rigclient:allocateResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="releaseRequest">
+  	<wsdl:part name="parameters" element="rigclient:release"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="releaseResponse">
+  	<wsdl:part name="parameters" element="rigclient:releaseResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="notifyRequest">
+  	<wsdl:part name="parameters" element="rigclient:notify"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="notifyResponse">
+  	<wsdl:part name="parameters" element="rigclient:notifyResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="performBatchControlRequest">
+  	<wsdl:part name="parameters" element="rigclient:performBatchControl"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="performBatchControlResponse">
+  	<wsdl:part name="parameters" element="rigclient:performBatchControlResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="performPrimitiveControlRequest">
+  	<wsdl:part name="parameters" element="rigclient:performPrimitiveControl"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="performPrimitiveControlResponse">
+  	<wsdl:part name="parameters" element="rigclient:performPrimitiveControlResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getAttributeRequest">
+  	<wsdl:part name="parameters" element="rigclient:getAttribute"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getAttributeResponse">
+  	<wsdl:part name="parameters" element="rigclient:getAttributeResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getStatusRequest">
+  	<wsdl:part name="parameters" element="rigclient:getStatus"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getStatusResponse">
+  	<wsdl:part name="parameters" element="rigclient:getStatusResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="setMaintenanceRequest">
+  	<wsdl:part name="parameters" element="rigclient:setMaintenance"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="setMaintenanceResponse">
+  	<wsdl:part name="parameters" element="rigclient:setMaintenanceResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="setTestIntervalRequest">
+  	<wsdl:part name="parameters" element="rigclient:setTestInterval"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="setTestIntervalResponse">
+  	<wsdl:part name="parameters" element="rigclient:setTestIntervalResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="abortBatchControlRequest">
+  	<wsdl:part name="parameters" element="rigclient:abortBatchControl"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="abortBatchControlResponse">
+  	<wsdl:part name="parameters" element="rigclient:abortBatchControlResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getBatchControlStatusRequest">
+  	<wsdl:part name="parameters" element="rigclient:getBatchControlStatus"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getBatchControlStatusResponse">
+  	<wsdl:part name="parameters" element="rigclient:getBatchControlStatusResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="slaveAllocateRequest">
+  	<wsdl:part name="parameters" element="rigclient:slaveAllocate"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="slaveAllocateResponse">
+  	<wsdl:part name="parameters" element="rigclient:slaveAllocateResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="slaveReleaseRequest">
+  	<wsdl:part name="parameters" element="rigclient:slaveRelease"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="slaveReleaseResponse">
+  	<wsdl:part name="parameters" element="rigclient:slaveReleaseResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="isActivityDetectableRequest">
+  	<wsdl:part name="parameters" element="rigclient:isActivityDetectable"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="isActivityDetectableResponse">
+  	<wsdl:part name="parameters" element="rigclient:isActivityDetectableResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getConfigRequest">
+  	<wsdl:part name="parameters" element="rigclient:getConfig"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getConfigResponse">
+  	<wsdl:part name="parameters" element="rigclient:getConfigResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="setConfigRequest">
+  	<wsdl:part name="parameters" element="rigclient:setConfig"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="setConfigResponse">
+  	<wsdl:part name="parameters" element="rigclient:setConfigResponse"></wsdl:part>
+  </wsdl:message>
+
+  <wsdl:portType name="RigClientService">
+    <wsdl:operation name="allocate">
+      <wsdl:input message="rigclient:allocateRequest"/>
+      <wsdl:output message="rigclient:allocateResponse"/>
+    </wsdl:operation>
+    <wsdl:operation name="release">
+    	<wsdl:input message="rigclient:releaseRequest"></wsdl:input>
+    	<wsdl:output message="rigclient:releaseResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="slaveAllocate">
+    	<wsdl:input message="rigclient:slaveAllocateRequest"></wsdl:input>
+    	<wsdl:output message="rigclient:slaveAllocateResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="slaveRelease">
+    	<wsdl:input message="rigclient:slaveReleaseRequest"></wsdl:input>
+    	<wsdl:output message="rigclient:slaveReleaseResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="notify">
+    	<wsdl:input message="rigclient:notifyRequest"></wsdl:input>
+    	<wsdl:output message="rigclient:notifyResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="performBatchControl">
+    	<wsdl:input message="rigclient:performBatchControlRequest"></wsdl:input>
+    	<wsdl:output message="rigclient:performBatchControlResponse"></wsdl:output>
+    </wsdl:operation>
+        <wsdl:operation name="abortBatchControl">
+    	<wsdl:input message="rigclient:abortBatchControlRequest"></wsdl:input>
+    	<wsdl:output message="rigclient:abortBatchControlResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getBatchControlStatus">
+    	<wsdl:input message="rigclient:getBatchControlStatusRequest"></wsdl:input>
+    	<wsdl:output message="rigclient:getBatchControlStatusResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="performPrimitiveControl">
+    	<wsdl:input message="rigclient:performPrimitiveControlRequest"></wsdl:input>
+    	<wsdl:output message="rigclient:performPrimitiveControlResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getAttribute">
+    	<wsdl:input message="rigclient:getAttributeRequest"></wsdl:input>
+    	<wsdl:output message="rigclient:getAttributeResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getStatus">
+    	<wsdl:input message="rigclient:getStatusRequest"></wsdl:input>
+    	<wsdl:output message="rigclient:getStatusResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="setMaintenance">
+    	<wsdl:input message="rigclient:setMaintenanceRequest"></wsdl:input>
+    	<wsdl:output message="rigclient:setMaintenanceResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="setTestInterval">
+    	<wsdl:input message="rigclient:setTestIntervalRequest"></wsdl:input>
+    	<wsdl:output message="rigclient:setTestIntervalResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="isActivityDetectable">
+    	<wsdl:input message="rigclient:isActivityDetectableRequest"></wsdl:input>
+    	<wsdl:output message="rigclient:isActivityDetectableResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getConfig">
+    	<wsdl:input message="rigclient:getConfigRequest"></wsdl:input>
+    	<wsdl:output message="rigclient:getConfigResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="setConfig">
+    	<wsdl:input message="rigclient:setConfigRequest"></wsdl:input>
+    	<wsdl:output message="rigclient:setConfigResponse"></wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  
+  <wsdl:binding name="RigClientServiceSOAP"
+  	type="rigclient:RigClientService">
+
+  	<!-- Allocate user operation. -->
+  	<soap:binding style="document"
+  		transport="http://schemas.xmlsoap.org/soap/http" />
+  	<wsdl:operation name="allocate">
+  		<soap:operation
+  			soapAction="http://remotelabs.eng.uts.edu.au/rigclient/allocate" />
+  		<wsdl:input>
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+
+  	<!-- Release user operation. -->
+  	<wsdl:operation name="release">
+  		<soap:operation
+  			soapAction="http://remotelabs.eng.uts.edu.au/rigclient/release" />
+  		<wsdl:input>
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+
+  	<!-- Slave user allocate operation. -->
+  	<wsdl:operation name="slaveAllocate">
+  		<soap:operation
+  			soapAction="http://remotelabs.eng.uts.edu.au/rigclient/slaveAllocate" />
+  		<wsdl:input>
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+
+  	<!-- Slave user release operation. -->
+  	<wsdl:operation name="slaveRelease">
+  		<soap:operation
+  			soapAction="http://remotelabs.eng.uts.edu.au/rigclient/slaveRelease" />
+  		<wsdl:input>
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+
+  	<!-- Session notification operation. -->
+  	<wsdl:operation name="notify">
+  		<soap:operation
+  			soapAction="http://remotelabs.eng.uts.edu.au/rigclient/notify" />
+  		<wsdl:input>
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+
+  	<!-- Batch control operation. -->
+  	<wsdl:operation name="performBatchControl">
+  		<soap:operation
+			soapAction="http://remotelabs.eng.uts.edu.au/rigclient/performBatchControl" />
+  		<wsdl:input>
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+
+  	<!-- Primitive control operation. -->
+  	<wsdl:operation name="performPrimitiveControl">
+  		<soap:operation
+  			soapAction="http://remotelabs.eng.uts.edu.au/rigclient/performPrimitiveControl" />
+  		<wsdl:input>
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+
+  	<!-- Get rig attribute operation. -->
+  	<wsdl:operation name="getAttribute">
+  		<soap:operation
+  			soapAction="http://remotelabs.eng.uts.edu.au/rigclient/getAttribute" />
+  		<wsdl:input>
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+
+  	<!-- Get rig status operation. -->
+  	<wsdl:operation name="getStatus">
+  		<soap:operation
+  			soapAction="http://remotelabs.eng.uts.edu.au/rigclient/getStatus" />
+  		<wsdl:input>
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+
+  	<!-- Set rig maintenance operation. -->
+  	<wsdl:operation name="setMaintenance">
+  		<soap:operation
+  			soapAction="http://remotelabs.eng.uts.edu.au/rigclient/setMaintenance" />
+  		<wsdl:input>
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+
+  	<!-- Set exerciser test interval operation. -->
+  	<wsdl:operation name="setTestInterval">
+  		<soap:operation
+  			soapAction="http://remotelabs.eng.uts.edu.au/rigclient/setTestInterval" />
+  		<wsdl:input>
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+
+  	<!-- Abort batch control operation. -->
+  	<wsdl:operation name="abortBatchControl">
+  		<soap:operation
+  			soapAction="http://remotelabs.eng.uts.edu.au/rigclient/abortBatchControl" />
+  		<wsdl:input>
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+
+  	<!-- Batch control status operation. -->
+  	<wsdl:operation name="getBatchControlStatus">
+  		<soap:operation
+  			soapAction="http://remotelabs.eng.uts.edu.au/rigclient/getBatchControlStatus" />
+  		<wsdl:input>
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+
+  	<!-- Activity detection operation. -->
+  	<wsdl:operation name="isActivityDetectable">
+  		<soap:operation
+  			soapAction="http://remotelabs.eng.uts.edu.au/rigclient/isActivityDetectable" />
+  		<wsdl:input>
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+
+  	<!-- Get configuration operation. -->
+  	<wsdl:operation name="getConfig">
+  		<soap:operation
+  			soapAction="http://remotelabs.eng.uts.edu.au/rigclient/getConfig" />
+  		<wsdl:input>
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+
+  	<!-- Set configuration operation. -->
+  	<wsdl:operation name="setConfig">
+            <soap:operation soapAction="http://remotelabs.eng.uts.edu.au/rigclient/setConfig"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+  		<wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+  	</wsdl:operation>
+  </wsdl:binding>
+  
+  <wsdl:service name="RigClientService">
+    <wsdl:port binding="rigclient:RigClientServiceSOAP" name="RigClientServiceSOAP">
+      <soap:address location="http://remotelabs.eng.uts.edu.au:8080/rigclient"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

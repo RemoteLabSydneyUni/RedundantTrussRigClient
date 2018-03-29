@@ -1,0 +1,1068 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+<!-- 
+################################################################################
+## Rig Client Configuration Descriptions.                                     ##
+################################################################################
+
+Each property should be configured with the following attributes:
+
+  * name      - Name of the configuration property
+  * stanza    - Property groupings
+  * mandatory - Whether the property is mandatory or optional, if the value is
+                'yes', 'true' or 'on' the property is mandatory
+  * type      - The data type of the property value, this can be either 'STRING',
+                'INTEGER', 'FLOAT', 'BOOLEAN' or 'CHAR'.
+  * format    - Configuration format expected
+  * default   - Default format 
+  * restart   - Whether the value will be applied immediately or on next rig client
+                start
+  * example   - Example value
+-->
+
+<!-- 
+################################################################################
+## File: rigclient.properties                                                 ##
+################################################################################
+-->
+<!-- ##### Rig properties ################################################ -->
+<property name="Rig_Name" 
+		  stanza="Rig" 
+		  mandatory="yes" 
+		  type="STRING" 
+		  restart="yes"
+ 		  example="Rig_1"
+ 		  format="&lt;String&gt;" 
+ 		  default="">
+Uniquely identifies a rig within the remote laboratory.
+</property>
+
+<property name="Rig_Type" 
+		  stanza="Rig" 
+		  mandatory="yes"
+		  type="STRING" 
+		  restart="yes"
+ 		  example="Inclined_Plane" 
+ 		  format="&lt;String&gt;" 
+ 		  default="">
+Identifies the rig as an identical configuration of same software and hardware.
+This means any rig in this type can be used in place of any other rig in the same
+type.
+</property>
+
+<property name="Rig_Capabilities" 
+		  stanza="Rig" 
+ 		  mandatory="yes" 
+ 		  type="STRING" 
+ 		  restart="yes"
+ 		  example="tag1,tag2,tag3" 
+ 		  format="&lt;String&gt;,...,&lt;String&gt;" 
+ 		  default="">
+A list of identifying tags which may be used to correlate rigs into collections
+to queue or book for. This allows, for example, multiple rig types to be 
+collectively queued to get the first free rig in any of the rig types.
+</property>
+
+<property name="Rig_Class" 
+		  stanza="Rig" 
+		  mandatory="yes" 
+		  type="STRING" 
+		  restart="yes"
+ 		  example="" 
+ 		  format="[au.edu.uts.eng.remotelabs.rig.ConfiguredRig] | [au.edu.uts.eng.remotelabs.rig.ConfiguredControlledRig] | &lt;String&gt;"
+ 		  default="">
+<![CDATA[
+The fully qualified class name of the Rig Clients rig type class. This must 
+implement the interface 'IRig' but in practice most likely extends the 
+abstract class 'AbstractRig'. Two generic implementations exist that provide
+the required rig type class functionality. These are: 
+<ul>
+    <li><strong>ConfiguredRig</strong> - Class
+    which is configured with the name of 'action' classes (classes 
+    implementing interfaces that are run at certain session events);</li>
+     <li><strong>ConfiguredControlledRig</strong> - 
+     Similar class to the former but also implements the option rig client
+     control interface;</li> 
+</ul>
+All the above classes are located in the package 
+'au.edu.uts.eng.remotelabs.rigclient.rig' which must be prefixed to the 
+above class names to make a fully qualified class name.
+<br />
+Consult the 'Sahara Development Handbook' for further detail about rig type 
+classes and how to create them.
+]]>
+</property>
+
+<property name="Rig_Client_IP_Address"
+          stanza="Rig"
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="138.25.49.151" 
+		  format="&lt;IP&gt;|&lt;hostname&gt;|empty"
+		  default="">
+The IP address of the machine the Rig Client is running on. This is needed if 
+the Rig Client machine has multiple network interfaces and you want to ensure 
+the external IP address is transmitted as the communication address. If left 
+empty, the address of the first iterated network device is used.
+</property>
+
+<property name="Listening_Network_Interface"
+          stanza="Rig"
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="eth0" 
+		  format="&lt;String&gt;|empty"
+		  default="">
+The name of the network interface of the Rig CIlient is listening on. This is
+needed if the Rig Client machine has multiple network interfaces and you want
+a specific network interface to be used. This may be used in preference to
+the 'Rig_Client_IP_Address' property as it allows a specific network interface
+to be used while still detecting the IP address at runtime (i.e. Supports DHCP).	
+</property>	
+
+<property name="Listening_Port"
+          stanza="Rig"
+          mandatory="yes" 
+          type="INTEGER" 
+          restart="yes"
+		  example="8080" 
+		  format="&lt;int&gt;"
+		  default=""> 
+The port number the Rig Client server is to listen on. This must be externally 
+accessible by the Scheduling Server.		  
+</property>
+
+<!-- #### Scheduling Server properties ######################################## -->
+<property name="Scheduling_Server_Address" 
+          stanza="Scheduling Server"
+          mandatory="yes" 
+          type="STRING" 
+          restart="yes"
+		  example="localhost" 
+		  format="&lt;String&gt;" 
+		  default="">
+The address of the Scheduling Server. This can be the host name or the IP 
+address of the computer the Scheduling Server is running on.
+</property>
+
+<property name="Scheduling_Server_Port"
+          stanza="Scheduling Server"
+          mandatory="yes" 
+          type="INTEGER" 
+          example="8080" 
+          restart="yes"
+		  format="&lt;int&gt;" 
+		  default="">
+The port number the Scheduling Server is listening on.
+</property>
+
+<property name="Scheduling_Server_Update_Period" 
+		  stanza="Scheduling Server" 
+		  mandatory="no" 
+		  type="INTEGER" 
+		  restart="yes"
+		  example="30" 
+		  format="&lt;30&gt;" 
+		  default="30">
+The time in seconds between sending status updates from the Rig Client to the
+Scheduling Server.
+</property>
+
+<!-- #### Miscellaneous Properties ######################################## -->
+<property name="Concurrent_Requests" 
+		  stanza="Miscellaneous" 
+		  mandatory="no" 
+		  type="INTEGER" 
+		  restart="yes"
+		  example="10" 
+		  format="&lt;int&gt;" 
+		  default="50">
+The number of requests the Rig Client can concurrently service. If there are more than
+this number of requests, the extra requests are queued.
+</property>
+
+<property name="Action_Failure_Threshold" 
+      	  stanza="Miscellaneous"
+      	  mandatory="no" 
+      	  type="INTEGER" 
+      	  restart="yes"
+		  example="3" 
+		  format="&lt;int&gt;" 
+		  default="3">
+The threshold indicating how many times an action can fail before the rig is put
+off line.
+</property>
+
+<property name="Force_Async_Allocation" 
+      	  stanza="Miscellaneous"
+      	  mandatory="no" 
+      	  type="BOOLEAN" 
+      	  restart="no"
+		  example="false" 
+		  format="[true|false]" 
+		  default="false">
+The Rig Client can perform 'allocation' synchronously where the
+allocation is run then a response is returned to the Scheduling Server or
+asynchronously where an immediate response is provided then a subsequent
+call-back is sent. This is because allocation may be a lengthy process and take
+longer than the Scheduling Server request time out which will cause allocation
+to fail. This property specifies whether allocation is forced to be
+asynchronous. If not, allocation is by default synchronous but may be requested
+by the Scheduling Server to be asynchronous which will occur depending on the
+'Ignore_Async_Allocation_Request' value.
+</property>
+
+<property name="Force_Async_Release" 
+      	  stanza="Miscellaneous"
+      	  mandatory="no" 
+      	  type="BOOLEAN" 
+      	  restart="no"
+		  example="false" 
+		  format="[true|false]" 
+		  default="false">
+As with the property 'Force_Async_Allocation' for allocation, this
+specifies whether 'release' is forced to be asynchronous. If not, release
+is synchronous by default but may be requested by the Scheduling Server to be
+asynchronous which will occur depending on the
+'Ignore_Async_Release_Request' value.
+</property>
+
+<property name="Ignore_Async_Allocation_Request" 
+      	  stanza="Miscellaneous"
+      	  mandatory="no" 
+      	  type="BOOLEAN" 
+      	  restart="no"
+		  example="false" 
+		  format="[true|false]" 
+		  default="false">
+The Scheduling Server can request allocation to be performed asynchronously.
+This property specifies whether a request to perform asynchronous allocation
+is honoured. The default behaviour is to honour a request to perform
+asynchronous allocation.
+</property>
+
+<property name="Ignore_Async_Release_Request" 
+      	  stanza="Miscellaneous"
+      	  mandatory="no" 
+      	  type="BOOLEAN" 
+      	  restart="no"
+		  example="false" 
+		  format="[true|false]" 
+		  default="false">
+As with the property 'Ignore_Async_Allocation_Request' for allocation,
+this specifies whether a request to perform release asynchronously is honoured.
+The default behaviour is to honour a request to perform asynchronous release.
+</property>
+
+<property name="Test_Light_Time"
+      	  stanza="Miscellaneous"
+      	  mandatory="no" 
+      	  type="STRING" 
+      	  restart="yes"
+		  example="07:00" 
+		  format="&lt;hour of day&gt;:&lt;minute&gt;" 
+		  default="09:00">
+The time at which the laboratory 'light' time starts. The light time is when the
+test frequency is set to be specified test run interval for tests which enable
+light-dark scheduling. The time should be configured in 24 hour time with a
+colon ':' between the hours and minute portions. The default light time is 09:00.		  
+</property>
+
+<property name="Test_Dark_Time"
+      	  stanza="Miscellaneous"
+      	  mandatory="no" 
+      	  type="STRING" 
+      	  restart="yes"
+		  example="20:00" 
+		  format="&lt;hour of day&gt;:&lt;minute&gt;" 
+		  default="18:00">
+The time at which the laboratory 'dark' time starts. The dark time is when the 
+test frequency is set to the specified test run interval multiplied by the 
+specified dark time factor for exerciser tests which enable light-dark exerciser 
+scheduling. It is the test which specifies the dark time factor. The time should 
+be configured with 24 hour time with a colon ':' between the hours and minutes 
+portions. The default dark time is 18:00.
+</property>
+
+<!-- 
+################################################################################
+## File: configuredrig.properties                                             ##
+################################################################################
+-->
+<property name="Action_Package_Prefixes" 
+          stanza="Configured Rig" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="au.edu.labshare.rigclient.action; au.edu.remotelabs.rigclient"
+		  format="&lt;Package&gt;;...;&lt;Package&gt;"
+		  default="">
+<![CDATA[
+The list of package names that are used in action class resolution. Class 
+resolution works using the following algorithm:
+<ol>
+	<li>The configured action class name is assumed to be a fully
+    qualified class name and an attempt is made to load it. If it 
+    is found then that class is used;</li>
+    <li>The configured action class name is appended to the first configured
+    action package prefix and an attempt is made to load it. If it is found 
+    then that class is used;</li>
+    <li>The configured action class name is appended to the next configured 
+    action package prefix and an attempt is made to load it. If it is found 
+    then that class is used. This occurs until either the class is found or
+    all the configured action package prefixes are tried;</li> 
+</ol>
+Multiple action package prefixes can be configured using the ';' character
+as the delimiter between packages.
+]]>
+</property>
+
+<property name="Access_Actions" 
+          stanza="Configured Rig" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="access.RdpAccessAction"
+		  format="&lt;Class&gt;;...;&lt;Class&gt;"
+		  default="">
+Access actions assign and revoke access to and from the assigned master user,
+running at the beginning and end of sessions respectively. This is the list of
+access actions to load. Multiple access actions can be configured, separating
+each with a `;' character. Each may be a fully qualified class name or a class
+name to append to one of the configured action package prefixes. When multiple
+access actions are configured, the assignment methods are invoked in order they
+are configured, and the revocation methods are invoked in reverse order they are
+configured.
+</property>
+
+<property name="Slave_Access_Actions" 
+          stanza="Configured Rig" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="slave.VncSlaveAccessAction"
+		  format="&lt;Class&gt;;...;&lt;Class&gt;"
+		  default="">
+Slave access actions assign and revoke access for secondary session users.
+This configures the list of slave access actions to load. Multiple slave access 
+actions can be configured, separating each with a ';' character.When multiple 
+slave access actions are configured, the slave assignment methods are 
+invoked in the order they are configured and the slave revocation methods are 
+invoked in the reverse order they are configured.
+</property>
+
+<property name="Notify_Actions" 
+          stanza="Configured Rig" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="notify.TSNotifyAction"
+		  format="&lt;Class&gt;;...;&lt;Class&gt;"
+		  default="">
+Notify actions provide notifications to users of session event messages and are
+useful if the users focus may not be on the web interface. For example providing
+a Windows popup when a users focus is on using Remote Desktop.  This configures
+the list of notification actions to load. Multiple notification actions can be
+configured, separating each with a ';' character.
+</property>
+
+<property name="Detection_Actions" 
+          stanza="Configured Rig" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="detect.WTSDetectionAction"
+		  format="&lt;Class&gt;;...;&lt;Class&gt;"
+		  default="">
+Detection actions are used to verify whether a user is actually using a rig when in 
+session. If not, the user is removed from the rig after a permission
+configured timeout period. This configures the list of detection actions to 
+load. Multiple detection actions can be configured, separating each 
+with a ';' character.
+</property>
+
+<property name="Reset_Actions" 
+          stanza="Configured Rig" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="reset.PowerResetAction"
+		  format="&lt;Class&gt;;...;&lt;Class&gt;"
+		  default="">
+Reset actions are run at the end of sessions to cleanup the rig to be ready
+for the next user. This configures the list of reset actions to load. Multiple
+reset actions can be configured, separating each with a ';' character.
+</property>
+
+<property name="Test_Actions" 
+          stanza="Configured Rig" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="test.PingTestAction"
+		  format="&lt;Class&gt;;...;&lt;Class&gt;"
+		  default="">
+Test actions are used to ensure the rig is ready for use by running tests
+on the system when it is free. These tests report the rig status and if 
+one of the tests fail, the rig is taken offline. This configures the list
+of test actions to load. Multiple test actions can be configured, separating
+each with a ';' character.
+</property>
+
+<!-- #### Administrative Interface ############################################ -->
+<property name="Admin_Username" 
+		  stanza="Admin" 
+		  mandatory="no" 
+		  type="STRING" 
+		  restart="no"
+		  example="admin" 
+		  format="&lt;String&gt;" 
+		  default="admin">
+The username to login to the administrative web interface. If this is not 
+configured the default username is 'admin'.
+</property>
+
+<property name="Admin_Password" 
+          stanza="Admin" 
+          mandatory="no" 
+          type="STRING" 
+          restart="no"
+		  example="adminpasswd"
+		  format="&lt;String&gt;"
+		  default="passwd">
+The password to login to the administrative web interface. If this is not
+configured the defaul password is 'passwd'.
+</property>
+
+<!-- 
+################################################################################
+## File: logger.properties                                                    ##
+################################################################################
+-->
+<property name="Logger_Type" 
+          stanza="Logging" 
+          mandatory="yes" 
+          type="STRING" 
+          restart="yes"
+		  example="SystenErr"
+		  format="[SystemErr|File|RolledFile|Syslog|WinEvents]"
+		  default="">
+<![CDATA[
+The logging subsystem which specifies where logs are persisted to. The following 
+logging types are implemented: 
+<ul>
+	<li><strong>SystemErr</strong> - logs messages to the process standard 
+	error stream;</li>
+	<li><strong>File</strong> - logs messages to a plain text file and is 
+	susceptible to log file bloat;</li>
+	<li><strong>RolledFile</strong> - logs messages to a plain text file 
+	and is rolled when it reaches a configured size;</li>
+	<li><strong>Syslog</strong> - logs messages to a Syslog server; </li>
+	<li><strong>WinEvents</strong> - logs messages to the Windows Event 
+	Log.</li>
+</ul>
+NOTE: The WinEvents logger only runs on Windows and requires the file 
+'NTEventLogAppender.dll' to placed in PATH.
+]]>
+</property>
+
+<property name="Log_Level" 
+          stanza="Logging" 
+          mandatory="yes" 
+          type="STRING" 
+          restart="yes"
+		  example="INFO"
+		  format="[ERROR|WARN|INFO|DEBUG]"
+		  default="">
+<![CDATA[
+The level of log messages that are logged. Configuring a more verbose log 
+level will print that log levels messages and the preceding less verbose log
+levels. The log levels that may be configured in order of least verbosity are:
+<ul>
+	<li><strong>ERROR</strong> - Messages that are generated by events that cause unexpected 
+	results and stop the expected program execution sequence; </li>
+	<li><strong>WARN</strong> - Messages that are generated by events that cause undesired 
+	results but do not stop the expected program execution sequence; </li>
+	<li><strong>INFO</strong> - Message that generated by events that are regular in occurrence, 
+	however are useful in audit trails; </li>
+	<li><strong>DEBUG</strong> - Messages specifying program execution and progression.</li>
+]]>
+</property>
+
+<property name="Log_File_Name" 
+          stanza="Logging" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="rigclient.log"
+		  format="&lt;String&gt;"
+		  default="">
+The name of the text file the 'File' and 'RolledFile' loggers log to.
+</property>
+
+<property name="Log_File_Max_Size" 
+          stanza="Logging" 
+          mandatory="no" 
+          type="INTEGER" 
+          restart="yes"
+		  example="3"
+		  format="&lt;int&gt;"
+		  default="10">
+Maximum file size for the rolled logger log file in megabytes.
+</property>
+
+<property name="Log_File_Backups" 
+          stanza="Logging" 
+          mandatory="no" 
+          type="INTEGER" 
+          restart="yes"
+		  example="5"
+		  format="&lt;int&gt;"
+		  default="5">
+Maximum number of backups for the rolled file logger log file backups. 
+After the maximum number of backups is exceeded, the oldest log backup file 
+is deleted.
+</property>
+
+<property name="Syslog_Host" 
+          stanza="Logging" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="127.0.0.1"
+		  format="&lt;hostname&gt;"
+		  default="">
+The host name of IP of the Syslog server.
+</property>
+
+<property name="Syslog_Local_Facility_Num" 
+          stanza="Logging" 
+          mandatory="no" 
+          type="INTEGER" 
+          restart="yes"
+		  example="4"
+		  format="&lt;int&gt;"
+		  default="">
+Syslog log local facility number to use (between 1 to 7). 
+</property>
+
+<property name="Default_Log_Format" 
+          stanza="Logging" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="[__LEVEL__] - [__ISO8601__] - __MESSAGE__"
+		  format="&lt;Format String&gt;"
+		  default="[__LEVEL__] - [__ISO8601__] - __MESSAGE__">
+<![CDATA[
+The format of the log messages can be specified by providing a format 
+string with macros which are be replaced by their actual values. 
+The following is a list of macros that may be put in format strings:  
+<ul>
+	<li><strong>__MESSAGE__</strong> - Actual message; </li>
+    <li><strong>__LEVEL__</strong> - Logging level (FATAL, PRIORITY, ..., DEBUG); </li>
+    <li><strong>__TIME__</strong> - Time with hour of day:minute:second; </li>
+    <li><strong>__DATE__</strong> - Date with day:month:year; </li>
+    <li><strong>__ISO8601__</strong> - ISO 8601 formatted date; </li>
+    <li><strong>__CLASS__</strong> - Class where the message originated; </li>
+    <li><strong>__METHOD__</strong> - Method where the message originated;  </li>
+    <li><strong>__SOURCE__</strong> - Source file where the message originated;  </li>
+    <li><strong>__LINE_NUM__</strong> - Line number where the message originated;</li>
+    <li><strong>__TID__</strong> - Thread id where the message originated. </li>
+</ul>
+The default format of logging messages is used for those levels 
+which do not provide their own logging format.
+]]>
+</property>
+
+<property name="FATAL_Log_Format" 
+          stanza="Logging" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="[__LEVEL__] - [__ISO8601__] - __MESSAGE__"
+		  format="&lt;Format String&gt;"
+		  default="Default_Log_Format">
+Fatal log format specific to fatal log messages.
+</property>
+
+<property name="PRIORITY_Log_Format" 
+          stanza="Logging" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="[__LEVEL__] - [__ISO8601__] - __MESSAGE__"
+		  format="&lt;Format String&gt;"
+		  default="Default_Log_Format">
+Priority log format specific to priority log messages.
+</property>
+
+<property name="ERROR_Log_Format" 
+          stanza="Logging" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="[__LEVEL__] - [__ISO8601__] - __MESSAGE__"
+		  format="&lt;Format String&gt;"
+		  default="Default_Log_Format">
+Error log format specific to error log messages.
+</property>
+
+<property name="WARN_Log_Format" 
+          stanza="Logging" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="[__LEVEL__] - [__ISO8601__] - __MESSAGE__"
+		  format="&lt;Format String&gt;"
+		  default="Default_Log_Format">
+Warn log format specific to warn log messages.
+</property>
+
+<property name="INFO_Log_Format" 
+          stanza="Logging" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="[__LEVEL__] - [__ISO8601__] - __MESSAGE__"
+		  format="&lt;Format String&gt;"
+		  default="Default_Log_Format">
+Info log format specific to info log messages.
+</property>
+
+<property name="DEBUG_Log_Format" 
+          stanza="Logging" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="[__LEVEL__] - [__ISO8601__] - __MESSAGE__"
+		  format="&lt;Format String&gt;"
+		  default="Default_Log_Format">
+Debug log format specific to debug log messages.
+</property>
+
+<!-- 
+################################################################################
+## File: primitive.properties                                                 ##
+################################################################################
+-->
+<property name="Package_Prefixes" 
+          stanza="Primitive Control" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="au.edu.labshare.rigclient.primitive;au.edu.rmit.labshare"
+		  format="&lt;Package&gt;;...;&lt;Package&gt;"
+		  default="">
+<![CDATA[
+The list of package names that are used in primitive controller class resolution.
+Class resolution works using the following algorithm:
+<ol>
+	<li>The specified controller class name is assumed to be a fully qualified 
+	class name and an attempt is made to load it. If it is found then that class
+	is used;</li>
+	<li>The specified controller class name is appended to the first configured 
+	primitive package and an attempt is made to load it. If it is found then that 
+	class is used; </li>
+	<li>The specified controller class name is appended to the next configured 
+	primitive package and an attempt is made to load it. If it is found then 
+	that class is used. This occurs until either the class is found or 
+	all the configured primitive packages are tried;</li>
+</ol>
+Multiple primitive package prefixes can be configured using the ';' character as
+the delimiter between packages.
+]]>
+</property>
+
+<!-- 
+################################################################################
+## File: batch.properties                                                    ##
+################################################################################
+-->
+<property name="Batch_Download_Dir" 
+          stanza="Batch Control" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="/tmp"
+		  format="&lt;Path&gt;"
+		  default="System temp directory">
+Directory where batch control uploaded instruction files are stored. If this
+is left blank, the system default temporary directory is used. 
+</property>
+
+<property name="Batch_ScrollBack" 
+          stanza="Batch Control" 
+          mandatory="no" 
+          type="INTEGER" 
+          restart="no"
+		  example="100"
+		  format="&lt;int&gt;"
+		  default="1000">
+The number of lines in batch stdin / stderr scroll back. If this limit is
+reached the oldest lines in the scroll back are deleted and replaced with
+new lines. The default is 1000 lines. If the value is set to -1, an 
+infinite size scroll back is used.
+</property>
+
+<property name="Batch_Timeout" 
+          stanza="Batch Control" 
+          mandatory="no" 
+          type="INTEGER" 
+          restart="yes"
+		  example="30"
+		  format="&lt;int&gt;"
+		  default="60">
+Batch time out in seconds. Time to wait at batch startup before failing
+batch control, if the batch process has not started. If the timeout is 
+0, there is no batch startup wait and batch control immediately returns
+without checking whether batch control invocation is successful. The
+default is 60 seconds.
+</property>
+
+<property name="Batch_Termination_TimeOut" 
+          stanza="Batch Control" 
+          mandatory="no" 
+          type="INTEGER" 
+          restart="yes"
+		  example="5"
+		  format="&lt;int&gt;"
+		  default="10">
+Batch termination time out in seconds. Time to wait before returning a 
+batch termination success or failure result.  The default is 10 seconds.
+</property>
+
+<property name="Batch_Working_Dir" 
+          stanza="Batch Control" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="/var/cache/rigclient"
+		  format="[&lt;Path&gt;|null]"
+		  default="System temp directory">
+Batch process working directory. If this is is set to null, the working
+directory is taken to be the System temporary directory. The default is
+null.
+</property>
+
+<property name="Batch_Create_Nested_Dir" 
+          stanza="Batch Control" 
+          mandatory="no" 
+          type="BOOLEAN" 
+          restart="yes"
+		  example="true"
+		  format="[true|false]"
+		  default="true">
+Whether to create a nested working directory per batch control invocation.
+If this is set to true, a new directory is created in the batch working
+directory and the batch processes working directory is set as the new 
+directory. The default is true.
+</property>
+
+<property name="Batch_Clean_Up" 
+          stanza="Batch Control" 
+          mandatory="no" 
+          type="BOOLEAN" 
+          restart="yes"
+		  example="true"
+		  format="[true|false]"
+		  default="false">
+Whether to run batch clean up. If this is set to true, the batch control 
+invocation generated files are deleted. This setting is only honoured if the
+property Batch_Create_Nester_Dir property is set to true. If not, it is 
+ignored and no clean up is run. The default is false.
+</property>
+
+<property name="Batch_Flush_Env" 
+          stanza="Batch Control" 
+          mandatory="no" 
+          type="BOOLEAN" 
+          restart="yes"
+		  example="true"
+		  format="[true|false]"
+		  default="false">
+Specifies if the batch process should inherit the environment variables of the 
+rig client process (the diagnostics page shows the rig client environment 
+variables). If true, no inherited environment variables will be given to the
+batch process unless they are set up manually. The default value is false.
+</property>
+
+<property name="Batch_Instruct_File_Delete" 
+          stanza="Batch Control" 
+          mandatory="no" 
+          type="BOOLEAN" 
+          restart="yes"
+		  example="true"
+		  format="[true|false]"
+		  default="true">
+Specifies if the uploaded instruction should be deleted upon completion of 
+batch execution. If true, the uploaded batch instruction file is deleted.
+The default value is true.
+</property>
+
+<!-- ConfiguredBatchRunner properties. -->
+<property name="Batch_Exec" 
+          stanza="Configured Batch" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="/bin/false"
+		  format="&lt;String&gt;"
+		  default="System temp directory">
+The batch executable to run. This should be an absolute reference to 
+the batch executable that should be invoked for batch control 
+(i.e. '/bin/ls' instead of 'ls').
+</property>
+
+<property name="Batch_Exec_Arg_1" 
+          stanza="Configured Batch" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="__FILE__"
+		  format="[&lt;String&gt;|&lt;Macro&gt;]"
+		  default="">
+Arguments to provide to the batch executable in order of 1 to n. As many
+arguments as needed may be configured provided they follow the format
+'Exec_Arg_&lt;Integer&gt;'. The Exec_Arg_ integers must be correctly sequenced,
+missing a number will cause subsequent argument configuration to not be
+loaded. The arguments are provided to the batch command in the order they
+are sequenced. Macros may be used as values. To provide the file as
+a command line argument use the __FILE__ macro.
+</property>
+
+<property name="Batch_Env_1" 
+          stanza="Configured Batch" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="key:value"
+		  format="&lt;String&gt;:[&lt;String&gt;|&lt;Macro&gt;]"
+		  default="">
+Environment variables to provide for the batch executable process. As may
+environment variables as needed may be configured provided they follow
+the format 'Env_&lt;Integer&gt;' with the configuration value as environment 
+'&lt;Key&gt;:&lt;Value&gt;'. The Env integers must be correctly sequenced, missing a 
+number will cause subsequent environment variable configuration to not be
+loaded. Macros be used as the value portion of the environment variable.
+</property>
+
+<property name="Batch_Test_File_Extension" 
+          stanza="Configured Batch" 
+          mandatory="no" 
+          type="BOOLEAN" 
+          restart="yes"
+		  example="true"
+		  format="[true|false]"
+		  default="false">
+Whether to test the instruction file extension. If this is set to true,
+File_Extension property must be set. The default value is false to specify
+not to test a file extension.
+</property>
+
+<property name="Batch_File_Extension" 
+          stanza="Configured Batch" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="tar.gz"
+		  format="&lt;String&gt;"
+		  default="">
+Instruction file extension. This should be configured as a string specifying the
+characters of the file extension. The file extension test will check if the 
+instruction file name ends with the configured extension.
+</property>
+
+<property name="Batch_Test_Max_File_Size" 
+          stanza="Configured Batch" 
+          mandatory="no" 
+          type="BOOLEAN" 
+          restart="yes"
+		  example="true"
+		  format="[true|false]"
+		  default="false">
+Whether to test for instruction file maximum size. If this is set to true,
+the File_Size property must be set with the maximum permissible instruction
+file size. The default value is false to specify not to test for file 
+size.
+</property>
+
+<property name="Batch_Max_File_Size" 
+          stanza="Configured Batch" 
+          mandatory="no" 
+          type="INTEGER" 
+          restart="yes"
+		  example="true"
+		  format="&lt;int&gt;"
+		  default="">
+Maximum file size of the instruction file in kilobytes.
+</property>
+
+<property name="Batch_Test_Magic_Number" 
+          stanza="Configured Batch" 
+          mandatory="no" 
+          type="BOOLEAN" 
+          restart="yes"
+		  example="true"
+		  format="[true|false]"
+		  default="false">
+Whether to test the instruction file for magic number. Many files have constants
+that identify the contained data. Detecting such constants in files is an effective 
+way of distinguishing between many file formats. If this is set to true, the 
+File_Magic_Number property must be set with a hexadecimal representation of the
+file magic number. The default value is false to specify not to test for file
+magic number.
+</property>
+
+<property name="Batch_File_Magic_Number" 
+          stanza="Configured Batch" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="0xCAFEBABE"
+		  format="&lt;hex&gt;"
+		  default="">
+File magic number in hexadecimal format. The prefix '0x' is optional.
+</property>
+
+<property name="Batch_Sync_Results_Dir" 
+          stanza="Configured Batch" 
+          mandatory="no" 
+          type="BOOLEAN" 
+          restart="yes"
+		  example="true"
+		  format="[true|false]"
+		  default="false">
+Whether to synchronise the results directory (batch process working directory
+to the another directory). If true, the results directory is copied to a
+different directory. If true the Sync_Dir_Destination property and 
+the Sync_Dir_Name property must be set with the results destination path name
+and result directory name respectively. The default is false.
+</property>
+
+<property name="Batch_Sync_Dir_Destination" 
+          stanza="Configured Batch" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="/var/rigclient/__YEAR__/"
+		  format="&lt;path&gt;"
+		  default="">
+The absolute path name to the directory to store the results file
+directory. Macro variables may be used as path elements. This 
+directory must exist for storing results to succeed.
+</property>
+
+<property name="Batch_Sync_Dir_Name" 
+          stanza="Configured Batch" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="__USER__"
+		  format="&lt;String&gt;"
+		  default="">
+The name of either the results directory or results file depending on the 
+Compress_Dir setting. If Compress_Dir is true, this is used as the file 
+name and a suitable file extension is appended to the name.
+</property>
+
+<property name="Batch_Compress_Dir" 
+          stanza="Configured Batch" 
+          mandatory="no" 
+          type="BOOLEAN" 
+          restart="yes"
+		  example="true"
+		  format="[true|false]"
+		  default="false">
+Whether to compress the results directory into a zip archive. The default
+false to not compress the results directory.
+</property>
+
+<property name="Batch_Compression_Level" 
+          stanza="Configured Batch" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="BEST"
+		  format="[BEST|DEFAULT|FASTEST]"
+		  default="DEFAULT">
+The compression level of the results file. This may be one of the following
+compression levels:
+<![CDATA[
+<ul>
+  <li>BEST - Best compression</li>
+  <li>DEFAULT - Default compression</li>
+  <li>FASTEST - Fastest compression</li>
+</ul>
+The default compression level is 'DEFAULT'.
+]]>
+</property>
+
+<!-- 
+################################################################################
+## File: filetransfer.properties                                              ##
+################################################################################
+ -->
+ 
+<!-- Disabling because not implemented yet.
+<property name="Data_Transfer_Method" 
+          stanza="Data Transfer" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="WEBDAV"
+		  format="[ATTACHMNENT|FILESYSTEM|WEBDAV]"
+		  default="WEBDAV">
+The method to transfer files to the Scheduling Server for consumption of 
+users. The options are 'ATTACHMENT' which requires no setup and is suitable
+for transferring only small files (less than 1MB); 'FILESYSTEM' which uses
+an externally configured shared file system between the Scheduling Server 
+and Rig Client machines; 'WEBDAV' which uses a WebDav client within the Rig
+Client to connect with the Scheduling Server WebDav server. The default is 
+'WEBDAV' as it is most suitable for most use cases. 
+</property> -->
+
+<property name="Data_Transfer_Local_Directory" 
+          stanza="Data Transfer" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="/var/cache/rigclient"
+		  format="&lt;Path&gt;"
+		  default="">
+The local directory for data files that should not be provided to the Scheduling
+Server as part of data file paths. This is useful, for example, if a file system is 
+shared with the Scheduling Server and the file system mount should be stripped from
+the directory path that is to be provided to Scheduling Server so it can find 
+the file.
+</property>
+
+<property name="Data_Transfer_Restore_File" 
+          stanza="Data Transfer" 
+          mandatory="no" 
+          type="STRING" 
+          restart="yes"
+		  example="./dfrestore"
+		  format="&lt;Path&gt;"
+		  default="./dfrestore">
+The restore file used to persist data files yet to be transferred to allow the Rig 
+Client can continue transferring data files after it has shutdown. The default restore  
+file is stored in the Rig Client installation directory. If the Rig Client does not have 
+write permissions to this directory, this property allows the location to be set to 
+a directory where the Rig Client has write permission. 
+</property>
+
+<property name="Delete_Data_Files_After_Transfer" 
+          stanza="Data Transfer" 
+          mandatory="no" 
+          type="BOOLEAN" 
+          restart="yes"
+		  example="false"
+		  format="true|false"
+		  default="./dfrestore">
+Whether to delete data files after transferring them for user access.
+</property>
+
+</config>

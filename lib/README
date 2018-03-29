@@ -1,0 +1,19 @@
+Directory for Rig Client libraries. The required libraries:
+
+  - log4j         - Log4J (http://logging.apache.org/log4j/1.2/index.html)
+                    Logging library which outputs log statements to a variety of 
+                    output targets.
+                    Released under the Apache Software License, Version 2.0.
+					Tested with version 1.2.x. Newer version should work.
+					
+  - Apache Axis 2 - Apache Axis2/Java (http://ws.apache.org/axis2/)
+                    Apache Axis2 is a Java-based implementation of both the client 
+                    and server sides of the Web services equation.
+                    Released under the Apache Software License, Version 2.0.
+                    Tested with version 1.5.x. Version 1.6 will not work.
+					
+  - Jetty 6 	  - Jetty (http://dist.codehaus.org/jetty/) version 6
+                    Jetty is a Java-based HTTP server, HTTP client and javax.servlet
+                    container.  
+                    Tested with version 6.1.x. Newer versions in the 6 series 
+					should work.
